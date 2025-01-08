@@ -1,62 +1,59 @@
 package com.nextstep.smartsecurity.ui.home
 
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.SurfaceHolder
+import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
-import com.google.firebase.database.FirebaseDatabase
-import com.nextstep.smartsecurity.databinding.FragmentHomeBinding
+import com.nextstep.smartsecurity.R
 
 class HomeFragment : Fragment() {
 
-    private var _binding: FragmentHomeBinding? = null
-    private val binding get() = _binding!!
+    private lateinit var surfaceView1: SurfaceView
+    private lateinit var surfaceView2: SurfaceView
+    private lateinit var mediaPlayer1: MediaPlayer
+    private lateinit var mediaPlayer2: MediaPlayer
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
+        inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        val homeViewModel =
-            ViewModelProvider(this).get(HomeViewModel::class.java)
-
-        _binding = FragmentHomeBinding.inflate(inflater, container, false)
-        val root: View = binding.root
-
-        val textView: TextView = binding.textHome
-        homeViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
-        }
-
-        val btnSendData: Button = binding.btnSendData
-        btnSendData.setOnClickListener {
-            sendDataToFirebase()
-        }
-
+    ): View? {
+        val root = inflater.inflate(R.layout.fragment_home, container, false)
+        surfaceView1 = root.findViewById(R.id.surface_view_1)
+        surfaceView2 = root.findViewById(R.id.surface_view_2)
         return root
     }
 
-    private fun sendDataToFirebase() {
-        val databaseReference = FirebaseDatabase.getInstance().getReference("message")
-
-        val value = "Hello, Firebase!"
-
-        databaseReference.setValue(value)
-            .addOnSuccessListener {
-                Toast.makeText(requireContext(), "Data sent successfully!", Toast.LENGTH_SHORT).show()
-            }
-            .addOnFailureListener { e ->
-                Toast.makeText(requireContext(), "Failed to send data: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupMediaPlayer(surfaceView1, "http://path.to/your/video1.mp4")
+        setupMediaPlayer(surfaceView2, "http://path.to/your/video2.mp4")
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+    private fun setupMediaPlayer(surfaceView: SurfaceView, videoUrl: String) {
+        val mediaPlayer = MediaPlayer()
+        surfaceView.holder.addCallback(object : SurfaceHolder.Callback {
+            override fun surfaceCreated(holder: SurfaceHolder) {
+                mediaPlayer.setDisplay(holder)
+                mediaPlayer.setDataSource(videoUrl)
+                mediaPlayer.prepareAsync()
+                mediaPlayer.setOnPreparedListener { it.start() }
+            }
+
+            override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {}
+
+            override fun surfaceDestroyed(holder: SurfaceHolder) {
+                mediaPlayer.release()
+            }
+        })
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mediaPlayer1.release()
+        mediaPlayer2.release()
     }
 }
