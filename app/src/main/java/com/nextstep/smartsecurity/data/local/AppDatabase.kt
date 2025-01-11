@@ -5,7 +5,7 @@ import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [ImageEntity::class], version = 1, exportSchema = false)
+@Database(entities = [Image::class], version = 1, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun imageDao(): ImageDao
@@ -20,7 +20,9 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "image_database"
-                ).build()
+                )
+                .fallbackToDestructiveMigration()
+                .build()
                 INSTANCE = instance
                 instance
             }

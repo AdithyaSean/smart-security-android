@@ -4,12 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
-import android.widget.Toast
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
-import com.google.firebase.database.FirebaseDatabase
 import com.nextstep.smartsecurity.databinding.FragmentHomeBinding
 
 class HomeFragment : Fragment() {
@@ -22,37 +19,21 @@ class HomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val homeViewModel =
-            ViewModelProvider(this).get(HomeViewModel::class.java)
-
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        val textView: TextView = binding.textHome
-        homeViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
-        }
+        val webView1: WebView = binding.webView1
+        val webView2: WebView = binding.webView2
 
-        val btnSendData: Button = binding.btnSendData
-        btnSendData.setOnClickListener {
-            sendDataToFirebase()
-        }
+        webView1.settings.javaScriptEnabled = true
+        webView2.settings.javaScriptEnabled = true
 
+        webView1.webViewClient = WebViewClient()
+        webView2.webViewClient = WebViewClient()
+
+        webView1.loadUrl("http://192.168.1.15:2003/video_feed/1")
+        webView2.loadUrl("http://192.168.1.16:2003/video_feed/2")
         return root
-    }
-
-    private fun sendDataToFirebase() {
-        val databaseReference = FirebaseDatabase.getInstance().getReference("message")
-
-        val value = "Hello, Firebase!"
-
-        databaseReference.setValue(value)
-            .addOnSuccessListener {
-                Toast.makeText(requireContext(), "Data sent successfully!", Toast.LENGTH_SHORT).show()
-            }
-            .addOnFailureListener { e ->
-                Toast.makeText(requireContext(), "Failed to send data: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
     }
 
     override fun onDestroyView() {

@@ -17,6 +17,8 @@ googleGmsGoogleServices = "4.4.2"
 firebaseDatabase = "21.0.0"
 roomCommon = "2.6.1"
 roomKtx = "2.6.1"
+roomCompiler = "2.6.1"
+glide = "4.16.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -35,9 +37,11 @@ androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation
 firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabase" }
 androidx-room-common = { group = "androidx.room", name = "room-common", version.ref = "roomCommon" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomCompiler" }
+bumptech-glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
+bumptech-glide-compiler = { group = "com.github.bumptech.glide", name = "compiler", version.ref = "glide" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 google-gms-google-services = { id = "com.google.gms.google-services", version.ref = "googleGmsGoogleServices" }
-
