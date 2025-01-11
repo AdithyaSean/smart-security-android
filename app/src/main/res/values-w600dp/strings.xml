@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="camera_1_audio">Camera 1 Audio</string>
+    <string name="camera_2_audio">Camera 2 Audio</string>
+    <string name="faces">Faces</string>
+</resources>
