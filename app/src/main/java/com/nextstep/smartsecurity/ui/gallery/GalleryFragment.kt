@@ -4,39 +4,30 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
-import com.nextstep.smartsecurity.databinding.FragmentGalleryBinding
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.nextstep.smartsecurity.R
 
 class GalleryFragment : Fragment() {
 
-    private var _binding: FragmentGalleryBinding? = null
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
-    private val binding get() = _binding!!
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var galleryAdapter: GalleryAdapter
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
+        inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        val galleryViewModel =
-            ViewModelProvider(this).get(GalleryViewModel::class.java)
-
-        _binding = FragmentGalleryBinding.inflate(inflater, container, false)
-        val root: View = binding.root
-
-        val textView: TextView = binding.textGallery
-        galleryViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
-        }
+    ): View? {
+        val root = inflater.inflate(R.layout.fragment_gallery, container, false)
+        recyclerView = root.findViewById(R.id.recycler_view)
         return root
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val photos = listOf(R.drawable.photo1, R.drawable.photo1, R.drawable.photo1, R.drawable.photo1, R.drawable.photo1, R.drawable.photo1, R.drawable.photo1, R.drawable.photo1, R.drawable.photo1, R.drawable.photo1) // Add your photo resources here
+        galleryAdapter = GalleryAdapter(requireContext(), photos)
+        recyclerView.layoutManager = GridLayoutManager(context, 2) // Set the number of columns
+        recyclerView.adapter = galleryAdapter
     }
 }
