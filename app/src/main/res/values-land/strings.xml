@@ -3,4 +3,6 @@
     <string name="camera_1_audio">Camera 1 Audio</string>
     <string name="camera_2_audio">Camera 2 Audio</string>
     <string name="faces">Faces</string>
+    <string name="upload_image">Upload Image</string>
+    <string name="audio">Audio</string>
 </resources>
