@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.nextstep.smartsecurity.R
 import com.nextstep.smartsecurity.data.local.AppDatabase
-import com.nextstep.smartsecurity.data.local.ImageEntity
+import com.nextstep.smartsecurity.data.local.Image
 import com.nextstep.smartsecurity.databinding.FragmentGalleryBinding
 
 class GalleryFragment : Fragment() {
@@ -54,7 +54,7 @@ class GalleryFragment : Fragment() {
 
     private inner class ImageAdapter : RecyclerView.Adapter<ImageAdapter.ImageViewHolder>() {
 
-        private var images: List<ImageEntity> = emptyList()
+        private var images: List<Image> = emptyList()
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.item_image, parent, false)
@@ -70,7 +70,7 @@ class GalleryFragment : Fragment() {
 
         override fun getItemCount(): Int = images.size
 
-        fun submitList(newImages: List<ImageEntity>) {
+        fun submitList(newImages: List<Image>) {
             images = newImages
             notifyDataSetChanged()
         }

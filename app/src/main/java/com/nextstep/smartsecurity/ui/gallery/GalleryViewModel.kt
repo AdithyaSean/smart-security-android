@@ -10,13 +10,14 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.nextstep.smartsecurity.data.local.AppDatabase
-import com.nextstep.smartsecurity.data.local.ImageEntity
+import com.nextstep.smartsecurity.data.local.Image
 import kotlinx.coroutines.launch
+import android.util.Log
 
 class GalleryViewModel(private val appDatabase: AppDatabase) : ViewModel() {
 
-    private val _images = MutableLiveData<List<ImageEntity>>()
-    val images: LiveData<List<ImageEntity>> = _images
+    private val _images = MutableLiveData<List<Image>>()
+    val images: LiveData<List<Image>> = _images
 
     init {
         fetchImagesFromFirebase()
@@ -26,15 +27,20 @@ class GalleryViewModel(private val appDatabase: AppDatabase) : ViewModel() {
         val database = Firebase.database.reference.child("faces")
         database.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val imageList = mutableListOf<ImageEntity>()
+                val imageList = mutableListOf<Image>()
                 for (child in snapshot.children) {
                     val cameraId = child.key ?: continue
+                    Log.d("GalleryViewModel", "Processing images for camera: $cameraId")
                     for (imageSnapshot in child.children) {
-                        val image = imageSnapshot.getValue(ImageEntity::class.java)
+                        Log.d("GalleryViewModel", "ImageSnapshot: ${imageSnapshot.value}")
+                        val image = imageSnapshot.getValue(Image::class.java)
                         if (image != null) {
                             imageList.add(image)
                             viewModelScope.launch {
-                                appDatabase.imageDao().insert(image)
+                                val existingImage = appDatabase.imageDao().getImageById(image.cameraId)
+                                if (existingImage == null) {
+                                    appDatabase.imageDao().insert(image)
+                                }
                             }
                         }
                     }
@@ -50,7 +56,9 @@ class GalleryViewModel(private val appDatabase: AppDatabase) : ViewModel() {
 
     fun getImagesFromLocal() {
         viewModelScope.launch {
-            _images.value = appDatabase.imageDao().getAllImages().value
+            appDatabase.imageDao().getAllImages().observeForever { imageList ->
+                _images.value = imageList
+            }
         }
     }
 }
