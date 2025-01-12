@@ -19,25 +19,26 @@ class HomeFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentHomeBinding.inflate(inflater, container, false)
-        val root: View = binding.root
+        ): View {
+          _binding = FragmentHomeBinding.inflate(inflater, container, false)
+          val root: View = binding.root
 
-        viewModel = ViewModelProvider(this)[HomeViewModel::class.java]
 
-        val webView1: WebView = binding.webView1
-        val webView2: WebView = binding.webView2
+          viewModel = ViewModelProvider(this)[HomeViewModel::class.java]
 
-        webView1.loadUrl("http://192.168.1.18:2003/video_feed/1")
-        webView2.loadUrl("http://192.168.1.18:2003/video_feed/2")
+          val webView1: WebView = binding.webView1
+          val webView2: WebView = binding.webView2
 
-        binding.audioButton1.setOnClickListener {
-            // Add logic to handle audio for the first stream
-        }
+          webView1.loadUrl("http://192.168.1.18:2003/video_feed/1")
+          webView2.loadUrl("http://192.168.1.18:2003/video_feed/2")
 
-        binding.audioButton2.setOnClickListener {
-            // Add logic to handle audio for the second stream
-        }
+          binding.audioButton1.setOnClickListener {
+              // Add logic to handle audio for the first stream
+          }
+
+          binding.audioButton2.setOnClickListener {
+              // Add logic to handle audio for the second stream
+          }
 
         return root
     }
