@@ -14,6 +14,6 @@ interface ImageDao {
     @Query("SELECT * FROM images ORDER BY timestamp DESC")
     fun getAllImages(): LiveData<List<Image>>
 
-    @Query("SELECT * FROM images WHERE id = :id LIMIT 1")
+    @Query("SELECT * FROM images WHERE cameraId = :id LIMIT 1")
     suspend fun getImageById(id: Int): Image?
 }

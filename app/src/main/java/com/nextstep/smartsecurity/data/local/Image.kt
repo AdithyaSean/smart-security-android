@@ -4,13 +4,13 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 @Entity(tableName = "images")
 data class Image(
-    @PrimaryKey val id: Int,
+    @PrimaryKey val id: Int = 0,
     val cameraId: Int,
-    val imageType: String,
     val imageData: String,
-    val timestamp: Long,
-    val imageName: String
+    val imageName: String,
+    val imageType: String,
+    val timestamp: Long
 ) {
     // No-argument constructor required by Firebase
-    constructor() : this(0, 0, "", "", 0L, "")
+    constructor() : this(0, 0, "", "", "", 0L)
 }
