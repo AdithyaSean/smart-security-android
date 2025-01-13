@@ -1,4 +1,4 @@
-package com.nextstep.smartsecurity.ui.slideshow
+package com.nextstep.smartsecurity.ui.camera
 
 import android.Manifest
 import android.content.ContentValues
@@ -14,17 +14,19 @@ import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.nextstep.smartsecurity.databinding.FragmentSlideshowBinding
+import com.google.firebase.storage.FirebaseStorage
+import com.nextstep.smartsecurity.databinding.FragmentCameraBinding
 import java.io.File
 import java.io.OutputStream
 
-class SlideshowFragment : Fragment() {
+class CameraFragment : Fragment() {
 
-    private var _binding: FragmentSlideshowBinding? = null
+    private var _binding: FragmentCameraBinding? = null
     private val binding get() = _binding!!
-    private lateinit var viewModel: SlideshowViewModel
+    private lateinit var viewModel: CameraViewModel
     private var imageCapture: ImageCapture? = null
     private var imageCount = 0
 
@@ -43,8 +45,8 @@ class SlideshowFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
         ): View {
-            viewModel = ViewModelProvider(this)[SlideshowViewModel::class.java]
-            _binding = FragmentSlideshowBinding.inflate(inflater, container, false)
+            viewModel = ViewModelProvider(this)[CameraViewModel::class.java]
+            _binding = FragmentCameraBinding.inflate(inflater, container, false)
             val root: View = binding.root
 
             checkPermissionsAndStartCamera()
@@ -98,7 +100,7 @@ class SlideshowFragment : Fragment() {
                     object : ImageCapture.OnImageSavedCallback {
                         override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                             val imagePath = photoFile.absolutePath
-                            viewModel.uploadImageData(3, "image", imagePath, photoFile.name, timestamp)
+                            uploadImageToFirebaseStorage(photoFile, timestamp)
                             saveImageToMediaStore(photoFile)
                         }
 
@@ -107,6 +109,21 @@ class SlideshowFragment : Fragment() {
                         }
                     }
                 )
+    }
+
+    private fun uploadImageToFirebaseStorage(photoFile: File, timestamp: Long) {
+        val storageRef = FirebaseStorage.getInstance().reference
+        val imageRef = storageRef.child("images/${photoFile.name}")
+        val uploadTask = imageRef.putFile(photoFile.toUri())
+
+        uploadTask.addOnSuccessListener {
+            imageRef.downloadUrl.addOnSuccessListener { uri ->
+                val imageUrl = uri.toString()
+                viewModel.uploadImageData(3, "image", imageUrl, photoFile.name, timestamp)
+        }
+        }.addOnFailureListener {
+            // Handle unsuccessful uploads
+        }
     }
 
     private fun saveImageToMediaStore(photoFile: File) {

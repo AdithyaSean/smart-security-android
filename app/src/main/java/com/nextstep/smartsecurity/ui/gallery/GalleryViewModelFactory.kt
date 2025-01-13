@@ -15,4 +15,3 @@ class GalleryViewModelFactory(private val appDatabase: AppDatabase) : ViewModelP
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
-

@@ -16,5 +16,6 @@
 local.properties
 google-services.json
 firebase.json
-database.rules.json
 .firebaserc
+/database.rules.json
+/storage.rules
