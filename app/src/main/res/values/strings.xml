@@ -15,4 +15,13 @@
     <string name="faces">Faces</string>
     <string name="upload_image">Upload Image</string>
     <string name="audio">Audio</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="don_t_have_an_account_register">Don\'t have an account? Register</string>
+    <string name="already_have_an_account_login">Already have an account? Login</string>
+    <string name="register">Register</string>
+    <string name="username">Username</string>
+    <string name="menu_register">Register</string>
+    <string name="menu_login">Login</string>
 </resources>

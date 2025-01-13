@@ -12,6 +12,8 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import com.nextstep.smartsecurity.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -25,6 +27,13 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val auth = Firebase.auth
+        if (auth.currentUser == null) {
+            findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.nav_login)
+        } else {
+            findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.nav_home)
+        }
 
         setSupportActionBar(binding.appBarMain.toolbar)
 

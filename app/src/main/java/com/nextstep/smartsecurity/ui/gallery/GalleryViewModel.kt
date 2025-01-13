@@ -10,8 +10,8 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
-import com.nextstep.smartsecurity.data.local.AppDatabase
-import com.nextstep.smartsecurity.data.local.Image
+import com.nextstep.smartsecurity.data.AppDatabase
+import com.nextstep.smartsecurity.data.Image
 import kotlinx.coroutines.launch
 
 class GalleryViewModel(private val appDatabase: AppDatabase) : ViewModel() {

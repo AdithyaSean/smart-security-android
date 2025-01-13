@@ -1,4 +1,4 @@
-package com.nextstep.smartsecurity.data.local
+package com.nextstep.smartsecurity.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

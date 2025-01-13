@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
-import com.nextstep.smartsecurity.data.local.AppDatabase
+import com.nextstep.smartsecurity.data.AppDatabase
 import com.nextstep.smartsecurity.databinding.FragmentGalleryBinding
 import com.nextstep.smartsecurity.ui.camera.ImageAdapter
 

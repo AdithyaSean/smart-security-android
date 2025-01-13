@@ -23,6 +23,6 @@ class CameraViewModel : ViewModel() {
             "imageName" to imageName,
             "timestamp" to timestamp
         )
-        database.child("faces").child("camera_3").push().setValue(data)
+        database.child("images").child("camera_3").push().setValue(data)
     }
 }

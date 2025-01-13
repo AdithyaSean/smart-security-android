@@ -5,9 +5,11 @@ import android.content.ContentValues
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -36,7 +38,7 @@ class CameraFragment : Fragment() {
         if (isGranted) {
         startCamera()
         } else {
-            // Handle permission denied
+            Toast.makeText(requireContext(), "Camera permission denied", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -83,8 +85,8 @@ class CameraFragment : Fragment() {
             try {
                 cameraProvider.unbindAll()
                 cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture)
-            } catch (exc: Exception) {
-                // Handle any errors
+            } catch (e: Exception) {
+                Log.e("CameraFragment", "Use case binding failed", e)
             }
         }, ContextCompat.getMainExecutor(requireContext()))
     }
@@ -100,12 +102,14 @@ class CameraFragment : Fragment() {
                     object : ImageCapture.OnImageSavedCallback {
                         override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                             val imagePath = photoFile.absolutePath
+                            Log.d("CameraFragment", "Image saved at: $imagePath")
+                            Toast.makeText(requireContext(), "Image saved at: $imagePath", Toast.LENGTH_SHORT).show()
                             uploadImageToFirebaseStorage(photoFile, timestamp)
                             saveImageToMediaStore(photoFile)
                         }
 
                         override fun onError(exc: ImageCaptureException) {
-                            // Handle error
+                            Log.e("captureImage", "Image capture error")
                         }
                     }
                 )
@@ -122,7 +126,7 @@ class CameraFragment : Fragment() {
                 viewModel.uploadImageData(3, "image", imageUrl, photoFile.name, timestamp)
             }
         }.addOnFailureListener {
-            // Handle unsuccessful uploads
+            Log.e("uploadImageToFirebaseStorage", "Unsuccessful uploads")
         }
     }
 

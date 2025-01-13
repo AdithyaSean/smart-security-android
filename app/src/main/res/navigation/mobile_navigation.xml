@@ -22,4 +22,16 @@
         android:name="com.nextstep.smartsecurity.ui.camera.CameraFragment"
         android:label="@string/menu_camera"
         tools:layout="@layout/fragment_camera" />
+
+    <fragment
+        android:id="@+id/nav_login"
+        android:name="com.nextstep.smartsecurity.ui.auth.LoginFragment"
+        android:label="@string/menu_login"
+        tools:layout="@layout/fragment_login" />
+
+    <fragment
+        android:id="@+id/nav_register"
+        android:name="com.nextstep.smartsecurity.ui.auth.RegisterFragment"
+        android:label="@string/menu_register"
+        tools:layout="@layout/fragment_register" />
 </navigation>

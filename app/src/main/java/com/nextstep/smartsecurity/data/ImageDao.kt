@@ -1,4 +1,4 @@
-package com.nextstep.smartsecurity.data.local
+package com.nextstep.smartsecurity.data
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao

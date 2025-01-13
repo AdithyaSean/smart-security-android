@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.nextstep.smartsecurity.R
-import com.nextstep.smartsecurity.data.local.Image
+import com.nextstep.smartsecurity.data.Image
 
 class ImageAdapter : ListAdapter<Image, ImageAdapter.ImageViewHolder>(DiffCallback()) {
 
