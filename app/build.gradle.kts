@@ -58,6 +58,8 @@ dependencies {
     implementation(libs.androidx.camera.view)
     implementation(libs.androidx.camera.camera2)
     kapt(libs.androidx.room.compiler)
+    implementation(libs.bumptech.glide)
+    kapt(libs.bumptech.glide.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

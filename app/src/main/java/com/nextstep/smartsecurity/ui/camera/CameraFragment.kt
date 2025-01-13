@@ -120,7 +120,7 @@ class CameraFragment : Fragment() {
             imageRef.downloadUrl.addOnSuccessListener { uri ->
                 val imageUrl = uri.toString()
                 viewModel.uploadImageData(3, "image", imageUrl, photoFile.name, timestamp)
-        }
+            }
         }.addOnFailureListener {
             // Handle unsuccessful uploads
         }

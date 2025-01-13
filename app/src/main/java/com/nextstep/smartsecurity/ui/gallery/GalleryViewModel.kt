@@ -1,11 +1,18 @@
 package com.nextstep.smartsecurity.ui.gallery
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 import com.nextstep.smartsecurity.data.local.AppDatabase
 import com.nextstep.smartsecurity.data.local.Image
+import kotlinx.coroutines.launch
 
 class GalleryViewModel(private val appDatabase: AppDatabase) : ViewModel() {
 
@@ -14,13 +21,33 @@ class GalleryViewModel(private val appDatabase: AppDatabase) : ViewModel() {
 
     init {
         fetchImagesFromFirebase()
+        getImagesFromLocal()
     }
 
     private fun fetchImagesFromFirebase() {
+        val databaseReference = Firebase.database.reference.child("faces").child("camera_3")
+        databaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val firebaseImages = mutableListOf<Image>()
+                for (data in snapshot.children) {
+                    val image = data.getValue(Image::class.java)
+                    image?.let { firebaseImages.add(it) }
+                }
+                _images.postValue(firebaseImages)
+            }
 
+            override fun onCancelled(error: DatabaseError) {
+                // Log the error or handle it appropriately
+                Log.e("GalleryViewModel", "Error fetching images from Firebase: ${error.message}")
+            }
+        })
     }
 
-    fun getImagesFromLocal() {
-
+    private fun getImagesFromLocal() {
+        viewModelScope.launch {
+            appDatabase.imageDao().getAllImages().observeForever { localImages ->
+                _images.postValue(localImages)
+            }
+        }
     }
 }
