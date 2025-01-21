@@ -31,13 +31,15 @@ class GalleryViewModel(private val appDatabase: AppDatabase) : ViewModel() {
                 val firebaseImages = mutableListOf<Image>()
                 for (data in snapshot.children) {
                     val image = data.getValue(Image::class.java)
-                    image?.let { firebaseImages.add(it) }
+                    image?.let {
+                        Log.d("GalleryViewModel", "Fetched image: ${it.imageUrl}")
+                        firebaseImages.add(it)
+                    }
                 }
                 _images.postValue(firebaseImages)
             }
 
             override fun onCancelled(error: DatabaseError) {
-                // Log the error or handle it appropriately
                 Log.e("GalleryViewModel", "Error fetching images from Firebase: ${error.message}")
             }
         })

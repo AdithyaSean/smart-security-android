@@ -1,5 +1,6 @@
 package com.nextstep.smartsecurity.ui.camera
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,7 +28,7 @@ class ImageAdapter : ListAdapter<Image, ImageAdapter.ImageViewHolder>(DiffCallba
         private val imageView: ImageView = itemView.findViewById(R.id.imageView)
 
         fun bind(image: Image) {
-            // Load image using Glide or Picasso
+            Log.d("ImageAdapter", "Binding image: ${image.imageUrl}")
             Glide.with(itemView.context).load(image.imageUrl).into(imageView)
         }
     }

@@ -1,6 +1,7 @@
 package com.nextstep.smartsecurity.ui.gallery
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -37,6 +38,7 @@ class GalleryFragment : Fragment() {
         }
 
         galleryViewModel.images.observe(viewLifecycleOwner) { images ->
+            Log.d("GalleryFragment", "Images observed: ${images.size}")
             imageAdapter.submitList(images)
         }
 
