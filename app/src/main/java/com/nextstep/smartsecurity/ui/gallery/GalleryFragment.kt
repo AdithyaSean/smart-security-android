@@ -30,11 +30,13 @@ class GalleryFragment : Fragment() {
 
         val appDatabase = AppDatabase.getDatabase(requireContext())
         galleryViewModel = ViewModelProvider(this, GalleryViewModelFactory(appDatabase)).get(GalleryViewModel::class.java)
+        Log.d("GalleryFragment", "ViewModel initialized")
 
         imageAdapter = ImageAdapter()
         binding.recyclerView.apply {
             layoutManager = GridLayoutManager(context, 3)
             adapter = imageAdapter
+            Log.d("GalleryFragment", "RecyclerView initialized")
         }
 
         galleryViewModel.images.observe(viewLifecycleOwner) { images ->

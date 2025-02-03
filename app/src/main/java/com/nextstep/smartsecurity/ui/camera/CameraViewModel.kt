@@ -1,11 +1,15 @@
 package com.nextstep.smartsecurity.ui.camera
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import com.nextstep.smartsecurity.data.AppDatabase
+import com.nextstep.smartsecurity.data.Image
+import kotlinx.coroutines.launch
 
-class CameraViewModel : ViewModel() {
+class CameraViewModel(private val appDatabase: AppDatabase) : ViewModel() {
 
     private val database: DatabaseReference = Firebase.database.reference
 
@@ -24,5 +28,11 @@ class CameraViewModel : ViewModel() {
             "timestamp" to timestamp
         )
         database.child("images").child("camera_3").push().setValue(data)
+
+        // Save image data to local database
+        val image = Image(cameraId = cameraId, imageType = imageType, imageUrl = imageUrl, imageName = imageName, timestamp = timestamp)
+        viewModelScope.launch {
+            appDatabase.imageDao().insert(image)
+        }
     }
 }
