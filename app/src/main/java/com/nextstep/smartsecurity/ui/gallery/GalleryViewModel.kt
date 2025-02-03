@@ -25,7 +25,7 @@ class GalleryViewModel(private val appDatabase: AppDatabase) : ViewModel() {
     }
 
     private fun fetchImagesFromFirebase() {
-        val databaseReference = Firebase.database.reference.child("camera_3")
+        val databaseReference = Firebase.database.reference.child("images")
         val cameras = listOf("camera_1", "camera_2", "camera_3")
         val firebaseImages = mutableListOf<Image>()
 

@@ -120,7 +120,7 @@ class CameraFragment : Fragment() {
 
     private fun uploadImageToFirebaseStorage(photoFile: File, timestamp: Long) {
         val storageRef = FirebaseStorage.getInstance().reference
-        val imageRef = storageRef.child("images/${photoFile.name}")
+        val imageRef = storageRef.child("camera_3/${photoFile.name}")
         val uploadTask = imageRef.putFile(photoFile.toUri())
 
         uploadTask.addOnSuccessListener {
