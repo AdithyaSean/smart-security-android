@@ -25,7 +25,7 @@ class GalleryViewModel(private val appDatabase: AppDatabase) : ViewModel() {
     }
 
     private fun fetchImagesFromFirebase() {
-        val databaseReference = Firebase.database.reference.child("faces").child("camera_3")
+        val databaseReference = Firebase.database.reference.child("images").child("camera_3")
         databaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val firebaseImages = mutableListOf<Image>()
@@ -48,7 +48,9 @@ class GalleryViewModel(private val appDatabase: AppDatabase) : ViewModel() {
     private fun getImagesFromLocal() {
         viewModelScope.launch {
             appDatabase.imageDao().getAllImages().observeForever { localImages ->
-                _images.postValue(localImages)
+                val currentImages = _images.value.orEmpty().toMutableList()
+                currentImages.addAll(localImages)
+                _images.postValue(currentImages)
             }
         }
     }
