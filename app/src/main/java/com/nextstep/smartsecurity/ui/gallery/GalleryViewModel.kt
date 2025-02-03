@@ -25,24 +25,28 @@ class GalleryViewModel(private val appDatabase: AppDatabase) : ViewModel() {
     }
 
     private fun fetchImagesFromFirebase() {
-        val databaseReference = Firebase.database.reference.child("images").child("camera_3")
-        databaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val firebaseImages = mutableListOf<Image>()
-                for (data in snapshot.children) {
-                    val image = data.getValue(Image::class.java)
-                    image?.let {
-                        Log.d("GalleryViewModel", "Fetched image: ${it.imageUrl}")
-                        firebaseImages.add(it)
-                    }
-                }
-                _images.postValue(firebaseImages)
-            }
+        val databaseReference = Firebase.database.reference.child("images")
+        val cameras = listOf("camera_1", "camera_2", "camera_3")
+        val firebaseImages = mutableListOf<Image>()
 
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("GalleryViewModel", "Error fetching images from Firebase: ${error.message}")
-            }
-        })
+        cameras.forEach { camera ->
+            databaseReference.child(camera).addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (data in snapshot.children) {
+                        val image = data.getValue(Image::class.java)
+                        image?.let {
+                            Log.d("GalleryViewModel", "Fetched image from $camera: ${it.imageUrl}")
+                            firebaseImages.add(it)
+                        }
+                    }
+                    _images.postValue(firebaseImages)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("GalleryViewModel", "Error fetching images from $camera: ${error.message}")
+                }
+            })
+        }
     }
 
     private fun getImagesFromLocal() {
