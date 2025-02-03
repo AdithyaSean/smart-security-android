@@ -29,8 +29,8 @@ class HomeFragment : Fragment() {
           val webView1: WebView = binding.webView1
           val webView2: WebView = binding.webView2
 
-          webView1.loadUrl("http://192.168.1.18:2003/video_feed/1")
-          webView2.loadUrl("http://192.168.1.18:2003/video_feed/2")
+          webView1.loadUrl("http://192.168.2.2:2003/video_feed/1")
+          webView2.loadUrl("http://192.168.2.2:2003/video_feed/2")
 
           binding.audioButton1.setOnClickListener {
               // Add logic to handle audio for the first stream
