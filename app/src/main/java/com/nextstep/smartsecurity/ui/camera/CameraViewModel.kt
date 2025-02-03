@@ -27,7 +27,7 @@ class CameraViewModel(private val appDatabase: AppDatabase) : ViewModel() {
             "imageName" to imageName,
             "timestamp" to timestamp
         )
-        database.child("images").child("camera_3").push().setValue(data)
+        database.child("camera_3").child("camera_3").push().setValue(data)
 
         // Save image data to local database
         val image = Image(cameraId = cameraId, imageType = imageType, imageUrl = imageUrl, imageName = imageName, timestamp = timestamp)
