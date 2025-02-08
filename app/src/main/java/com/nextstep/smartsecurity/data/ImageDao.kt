@@ -16,4 +16,13 @@ interface ImageDao {
 
     @Query("SELECT * FROM images WHERE cameraId = :id LIMIT 1")
     suspend fun getImageById(id: Int): Image?
+
+    @Query("SELECT * FROM images WHERE isKnown = :isKnown ORDER BY timestamp DESC")
+    fun getImagesByKnownStatus(isKnown: Boolean): LiveData<List<Image>>
+
+    @Query("UPDATE images SET isKnown = :isKnown WHERE id = :imageId")
+    suspend fun updateImageKnownStatus(imageId: Int, isKnown: Boolean)
+
+    @Query("SELECT COUNT(*) FROM images WHERE isKnown = 0")
+    fun getUnknownFacesCount(): LiveData<Int>
 }

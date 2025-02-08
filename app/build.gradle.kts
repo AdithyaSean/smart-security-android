@@ -48,6 +48,8 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.database)
     implementation(libs.firebase.storage)
+    implementation(libs.firebase.messaging)
+    implementation(libs.mlkit.face.detection)
     implementation(libs.firebase.appcheck)
     implementation(libs.firebase.appcheck.debug)
     implementation(libs.androidx.core.ktx)

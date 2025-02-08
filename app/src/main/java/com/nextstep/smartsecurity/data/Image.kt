@@ -10,8 +10,9 @@ data class Image(
     val imageUrl: String,
     val imageName: String,
     val imageType: String,
-    val timestamp: Long
+    val timestamp: Long,
+    var isKnown: Boolean = false // Default to false for new faces
 ) {
     // No-argument constructor required by Firebase
-    constructor() : this(0, 0, "", "", "", 0L)
+    constructor() : this(0, 0, "", "", "", 0L, false)
 }

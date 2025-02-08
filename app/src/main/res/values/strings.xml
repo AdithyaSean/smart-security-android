@@ -24,4 +24,11 @@
     <string name="username">Username</string>
     <string name="menu_register">Register</string>
     <string name="menu_login">Login</string>
+    
+    <!-- Gallery strings -->
+    <string name="unknown_faces_count">Unknown Faces (%d)</string>
+    <string name="mark_as_known">Mark as Known</string>
+    <string name="mark_as_unknown">Mark as Unknown</string>
+    <string name="unknown_face_detected">Unknown Face Detected</string>
+    <string name="tap_to_view">Tap to view in gallery</string>
 </resources>
