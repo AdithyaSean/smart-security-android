@@ -25,6 +25,11 @@
     <string name="menu_register">Register</string>
     <string name="menu_login">Login</string>
     
+    <!-- Home strings -->
+    <string name="refresh_cameras">Refresh Cameras</string>
+    <string name="scanning_cameras">Scanning for cameras...</string>
+    <string name="no_cameras_found">No cameras found</string>
+    
     <!-- Gallery strings -->
     <string name="unknown_faces_count">Unknown Faces (%d)</string>
     <string name="mark_as_known">Mark as Known</string>

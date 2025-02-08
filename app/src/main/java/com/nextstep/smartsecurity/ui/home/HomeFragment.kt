@@ -1,14 +1,17 @@
 package com.nextstep.smartsecurity.ui.home
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.core.view.MenuProvider
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import com.nextstep.smartsecurity.R
 import com.nextstep.smartsecurity.databinding.FragmentHomeBinding
+import com.nextstep.smartsecurity.service.CameraDiscoveryService.CameraInfo
 
 class HomeFragment : Fragment() {
 
@@ -25,29 +28,49 @@ class HomeFragment : Fragment() {
         val root: View = binding.root
 
         viewModel = ViewModelProvider(this)[HomeViewModel::class.java]
+        setupMenu()
+        setupWebViews()
+        observeViewModel()
 
-        val webView1: WebView = binding.webView1
-        val webView2: WebView = binding.webView2
+        return root
+    }
 
+    private fun setupMenu() {
+        requireActivity().addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.menu_home, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.action_refresh -> {
+                        viewModel.startDiscovery()
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    private fun setupWebViews() {
         // Configure WebView settings
-        webView1.settings.apply {
+        binding.webView1.settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true
             mediaPlaybackRequiresUserGesture = false
         }
-        webView2.settings.apply {
+        binding.webView2.settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true
             mediaPlaybackRequiresUserGesture = false
         }
 
         // Set WebViewClient to handle page loading
-        webView1.webViewClient = WebViewClient()
-        webView2.webViewClient = WebViewClient()
+        binding.webView1.webViewClient = WebViewClient()
+        binding.webView2.webViewClient = WebViewClient()
 
-        webView1.loadUrl("http://192.168.2.2:2003/video_feed/1")
-        webView2.loadUrl("http://192.168.2.2:2003/video_feed/2")
-
+        // Setup audio buttons
         binding.audioButton1.setOnClickListener {
             // Add logic to handle audio for the first stream
         }
@@ -55,8 +78,35 @@ class HomeFragment : Fragment() {
         binding.audioButton2.setOnClickListener {
             // Add logic to handle audio for the second stream
         }
+    }
 
-        return root
+    private fun observeViewModel() {
+        viewModel.cameras.observe(viewLifecycleOwner) { cameras ->
+            updateCameraViews(cameras)
+        }
+
+        viewModel.isScanning.observe(viewLifecycleOwner) { isScanning ->
+            binding.progressBar.isVisible = isScanning
+            if (isScanning) {
+                binding.noCamerasText.isVisible = false
+            }
+        }
+    }
+
+    private fun updateCameraViews(cameras: List<CameraInfo>) {
+        binding.noCamerasText.isVisible = cameras.isEmpty()
+        binding.linearLayout1.isVisible = cameras.isNotEmpty()
+        binding.linearLayout2.isVisible = cameras.size > 1
+
+        if (cameras.isNotEmpty()) {
+            val camera1 = cameras[0]
+            binding.webView1.loadUrl("http://${camera1.host}:${camera1.port}${camera1.streamPath}")
+        }
+
+        if (cameras.size > 1) {
+            val camera2 = cameras[1]
+            binding.webView2.loadUrl("http://${camera2.host}:${camera2.port}${camera2.streamPath}")
+        }
     }
 
     override fun onDestroyView() {
