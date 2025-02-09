@@ -1,7 +1,10 @@
 package com.nextstep.smartsecurity.ui.home
 
+import android.graphics.Bitmap
 import android.os.Bundle
+import android.util.Log
 import android.view.*
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.core.view.MenuProvider
@@ -58,16 +61,24 @@ class HomeFragment : Fragment() {
 
     private fun setupWebViews() {
         // Configure WebView settings
-        binding.webView1.settings.apply {
-            javaScriptEnabled = true
-            domStorageEnabled = true
-            mediaPlaybackRequiresUserGesture = false
+        val configureWebView = { webView: WebView ->
+            webView.settings.apply {
+                javaScriptEnabled = true
+                domStorageEnabled = true
+                mediaPlaybackRequiresUserGesture = false
+                useWideViewPort = true
+                loadWithOverviewMode = true
+                // Enable hardware acceleration for better performance
+                webView.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+                // Cache settings for better performance
+                cacheMode = WebSettings.LOAD_NO_CACHE
+                // Enable mixed content (HTTP content in HTTPS page)
+                mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+            }
         }
-        binding.webView2.settings.apply {
-            javaScriptEnabled = true
-            domStorageEnabled = true
-            mediaPlaybackRequiresUserGesture = false
-        }
+        
+        configureWebView(binding.webView1)
+        configureWebView(binding.webView2)
 
         // Set WebViewClient to handle page loading
         val webViewClient = object : WebViewClient() {

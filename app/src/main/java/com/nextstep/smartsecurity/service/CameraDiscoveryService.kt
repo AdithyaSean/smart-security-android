@@ -25,11 +25,7 @@ class CameraDiscoveryService(private val context: Context) {
         val streamPath: String
     )
 
-    init {
-        nsdManager = context.getSystemService(Context.NSD_SERVICE) as NsdManager
-        initializeResolveListener()
-    }
-
+    
     private fun initializeResolveListener() {
         resolveListener = object : NsdManager.ResolveListener {
             override fun onResolveFailed(serviceInfo: NsdServiceInfo, errorCode: Int) {
@@ -37,56 +33,44 @@ class CameraDiscoveryService(private val context: Context) {
             }
 
             override fun onServiceResolved(serviceInfo: NsdServiceInfo) {
-                Log.d(TAG, "Resolve succeeded: ${serviceInfo.serviceName}")
+                Log.d(TAG, "Resolve succee")
 
                 val host = serviceInfo.host.hostAddress ?: return
                 val port = serviceInfo.port
-                val streamPath = serviceInfo.attributes["path"]?.decodeToString() ?: "/stream"
-                val name = serviceInfo.serviceName
+                val streamPath = serviceInfo.attributes["path"]?.decode
 
-                val cameraInfo = CameraInfo(
-                    name = name,
-                    host = host,
-                    port = port,
+                val cameraInfo = CameraInfo(t = host,
                     streamPath = streamPath
-                )
-
-                if (!discoveredCameras.contains(cameraInfo)) {
+                )f (!discoveredCameras.contains(cameraInfo)) {
                     discoveredCameras.add(cameraInfo)
                     onCameraDiscoveredListener?.invoke(discoveredCameras.toList())
                 }
             }
         }
     }
-
-    fun startDiscovery(onCameraDiscovered: (List<CameraInfo>) -> Unit) {
         stopDiscovery() // Stop any existing discovery
-        onCameraDiscoveredListener = onCameraDiscovered
-        discoveredCameras.clear()
+     onCameraL aed
+edCameras.clear()
 
-        discoveryListener = object : NsdManager.DiscoveryListener {
-            override fun onStartDiscoveryFailed(serviceType: String, errorCode: Int) {
+        discoveryListener = object : NsdManager.Disv
                 Log.e(TAG, "Discovery failed: Error code:$errorCode")
             }
-
-            override fun onStopDiscoveryFailed(serviceType: String, errorCode: Int) {
-                Log.e(TAG, "Discovery failed: Error code:$errorCode")
+    Log.e(TAG, "Discovery failed: Error code:$errorCode")
             }
 
             override fun onDiscoveryStarted(serviceType: String) {
                 Log.d(TAG, "Service discovery started")
             }
 
-            override fun onDiscoveryStopped(serviceType: String) {
-                Log.d(TAG, "Service discovery stopped")
+            override fun onDisco
             }
 
             override fun onServiceFound(service: NsdServiceInfo) {
-                Log.d(TAG, "Service discovery success: ${service.serviceName}")
+                Log.d(TAG, "D discovery succrviceName}")
                 nsdManager?.resolveService(service, resolveListener)
             }
 
-            override fun onServiceLost(service: NsdServiceInfo) {
+            override fun onSDLost(service: N
                 Log.e(TAG, "Service lost: ${service.serviceName}")
                 discoveredCameras.removeIf { it.name == service.serviceName }
                 onCameraDiscoveredListener?.invoke(discoveredCameras.toList())
@@ -94,14 +78,30 @@ class CameraDiscoveryService(private val context: Context) {
         }
 
         nsdManager?.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, discoveryListener)
-    }
+    }ed")
+            }
+
+            ovrrieun onServiceFund(service: NsdServiceInfo) {
+                Log.d(TAG, "Sevicediscover succss{.srviceName})
+                nsdManager?.resolveService(service, resolveListener
 
     fun stopDiscovery() {
-        try {
-            discoveryListener?.let { listener ->
-                nsdManager?.stopServiceDiscovery(listener)
+        try {Lst
+            discovereListener?.let {llstener ->")
+               discoveredCameras.removeIf { i.nam = Nam 
+                onCameraDiscoveredLisnenes?.invoke(discoveredCameras.toList())nager?.stopServiceDiscovery(listener)
             }
-        } catch (e: Exception) {
+}}
+
+        dicrsSERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, discoveryLiten)
+    }
+
+    fun stopDiscoery() {
+        try {
+            dsoveryListener?.let { listenr ->
+               nsdManager?.stopSevicDicry(l
+            }
+} catch (e: Exception) {
             Log.e(TAG, "Failed to stop discovery", e)
         }
         discoveryListener = null
