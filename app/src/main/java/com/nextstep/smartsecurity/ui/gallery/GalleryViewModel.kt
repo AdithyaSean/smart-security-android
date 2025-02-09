@@ -40,8 +40,39 @@ class GalleryViewModel(private val appDatabase: AppDatabase) : ViewModel() {
     fun markImageAsKnown(imageId: Int, isKnown: Boolean) {
         viewModelScope.launch {
             try {
+                // Update local database
                 appDatabase.imageDao().updateImageKnownStatus(imageId, isKnown)
-                Log.d("GalleryViewModel", "Image $imageId marked as ${if (isKnown) "known" else "unknown"}")
+                Log.d("GalleryViewModel", "Image $imageId marked as ${if (isKnown) "known" else "unknown"} in local DB")
+
+                // Get image details from local DB
+                val image = appDatabase.imageDao().getImageById(imageId)
+                image?.let {
+                    // Update Firebase
+                    val cameraRef = Firebase.database.reference
+                        .child("images")
+                        .child("camera_${it.cameraId}")
+                        .child(it.imageName.substringBeforeLast("."))
+
+                    cameraRef.child("isKnown").setValue(isKnown)
+                        .addOnSuccessListener {
+                            Log.d("GalleryViewModel", "Image status updated in Firebase")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("GalleryViewModel", "Error updating Firebase: ${e.message}")
+                        }
+
+                    // If marking as known, also update the face recognition database
+                    if (isKnown) {
+                        Firebase.database.reference
+                            .child("known_faces")
+                            .child(it.imageName)
+                            .setValue(mapOf(
+                                "imageUrl" to it.imageUrl,
+                                "timestamp" to it.timestamp,
+                                "addedAt" to System.currentTimeMillis()
+                            ))
+                    }
+                }
             } catch (e: Exception) {
                 Log.e("GalleryViewModel", "Error updating image status: ${e.message}")
             }
@@ -51,19 +82,42 @@ class GalleryViewModel(private val appDatabase: AppDatabase) : ViewModel() {
     private fun fetchImagesFromFirebase() {
         val databaseReference = Firebase.database.reference.child("images")
         val cameras = listOf("camera_1", "camera_2", "camera_3")
-        val firebaseImages = mutableListOf<Image>()
-
+        
         cameras.forEach { camera ->
-            databaseReference.child(camera).addListenerForSingleValueEvent(object : ValueEventListener {
+            databaseReference.child(camera).addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
+                    val firebaseImages = mutableListOf<Image>()
                     for (data in snapshot.children) {
-                        val image = data.getValue(Image::class.java)
-                        image?.let {
-                            Log.d("GalleryViewModel", "Fetched image from $camera: ${it.imageUrl}")
-                            firebaseImages.add(it)
+                        try {
+                            val imageMap = data.value as? Map<*, *>
+                            if (imageMap != null) {
+                                val image = Image(
+                                    id = (imageMap["id"] as? Long)?.toInt() ?: 0,
+                                    cameraId = (imageMap["cameraId"] as? Long)?.toInt() ?: 0,
+                                    imageUrl = imageMap["imageUrl"] as? String ?: "",
+                                    imageName = imageMap["imageName"] as? String ?: "",
+                                    imageType = imageMap["imageType"] as? String ?: "",
+                                    timestamp = imageMap["timestamp"] as? Long ?: 0L,
+                                    isKnown = imageMap["isKnown"] as? Boolean ?: false
+                                )
+                                firebaseImages.add(image)
+                                
+                                // Update local database
+                                viewModelScope.launch {
+                                    appDatabase.imageDao().insert(image)
+                                }
+                            }
+                        } catch (e: Exception) {
+                            Log.e("GalleryViewModel", "Error parsing image data: ${e.message}")
                         }
                     }
-                    _images.postValue(firebaseImages)
+                    
+                    // Update the LiveData with the latest images
+                    val currentImages = _images.value.orEmpty().toMutableList()
+                    currentImages.addAll(firebaseImages)
+                    _images.postValue(currentImages.distinctBy { it.id })
+                    
+                    Log.d("GalleryViewModel", "Fetched ${firebaseImages.size} images from $camera")
                 }
 
                 override fun onCancelled(error: DatabaseError) {

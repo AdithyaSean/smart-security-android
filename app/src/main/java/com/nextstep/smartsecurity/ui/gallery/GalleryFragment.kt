@@ -25,6 +25,7 @@ class GalleryFragment : Fragment() {
     private lateinit var galleryViewModel: GalleryViewModel
     private lateinit var imageAdapter: ImageAdapter
     private var unknownCount = 0
+    private var showingUnknownOnly = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -59,8 +60,9 @@ class GalleryFragment : Fragment() {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menu.clear()
                 menuInflater.inflate(R.menu.menu_gallery, menu)
-                // Update the badge with unknown count
+                // Update the unknown faces count and checked state
                 val unknownItem = menu.findItem(R.id.action_unknown)
+                unknownItem.isChecked = showingUnknownOnly
                 if (unknownCount > 0) {
                     unknownItem.title = getString(R.string.unknown_faces_count, unknownCount)
                 }
@@ -69,7 +71,9 @@ class GalleryFragment : Fragment() {
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
                     R.id.action_unknown -> {
-                        // TODO: Filter to show only unknown faces
+                        showingUnknownOnly = !showingUnknownOnly
+                        menuItem.isChecked = showingUnknownOnly
+                        updateImageList()
                         true
                     }
                     else -> false
@@ -81,12 +85,30 @@ class GalleryFragment : Fragment() {
     private fun observeViewModel() {
         galleryViewModel.images.observe(viewLifecycleOwner) { images ->
             Log.d("GalleryFragment", "Images observed: ${images.size}")
-            imageAdapter.submitList(images)
+            updateImageList()
         }
 
         galleryViewModel.unknownFacesCount.observe(viewLifecycleOwner) { count ->
             unknownCount = count
             requireActivity().invalidateOptionsMenu()
+        }
+
+        galleryViewModel.unknownFaces.observe(viewLifecycleOwner) { unknownFaces ->
+            if (showingUnknownOnly) {
+                imageAdapter.submitList(unknownFaces)
+            }
+        }
+    }
+
+    private fun updateImageList() {
+        if (showingUnknownOnly) {
+            galleryViewModel.unknownFaces.value?.let { unknownFaces ->
+                imageAdapter.submitList(unknownFaces)
+            }
+        } else {
+            galleryViewModel.images.value?.let { allImages ->
+                imageAdapter.submitList(allImages)
+            }
         }
     }
 
