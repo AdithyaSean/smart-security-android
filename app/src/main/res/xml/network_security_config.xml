@@ -1,17 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
+    <!-- Allow cleartext traffic for camera streams on local network -->
     <domain-config cleartextTrafficPermitted="true">
-        <!-- Allow HTTP for all local network addresses -->
+        <!-- Local network ranges -->
         <domain includeSubdomains="true">192.168.0.0/16</domain>
         <domain includeSubdomains="true">172.16.0.0/12</domain>
         <domain includeSubdomains="true">10.0.0.0/8</domain>
+        <!-- Link-local addresses -->
+        <domain includeSubdomains="true">169.254.0.0/16</domain>
+        <!-- Localhost -->
+        <domain includeSubdomains="true">localhost</domain>
         <domain includeSubdomains="true">127.0.0.1</domain>
     </domain-config>
-    <!-- Also allow cleartext traffic for all domains during debug -->
-    <debug-overrides>
+    
+    <!-- Use system certificates by default -->
+    <base-config cleartextTrafficPermitted="false">
         <trust-anchors>
             <certificates src="system" />
-            <certificates src="user" />
         </trust-anchors>
-    </debug-overrides>
+    </base-config>
 </network-security-config>

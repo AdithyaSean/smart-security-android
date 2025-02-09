@@ -2,34 +2,61 @@ package com.nextstep.smartsecurity.ui.home
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.nextstep.smartsecurity.service.CameraDiscoveryService
-import com.nextstep.smartsecurity.service.CameraDiscoveryService.CameraInfo
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
-    private val cameraDiscoveryService = CameraDiscoveryService(application)
+    private val discoveryService = CameraDiscoveryService(application)
     
-    private val _cameras = MutableLiveData<List<CameraInfo>>()
-    val cameras: LiveData<List<CameraInfo>> = _cameras
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing = _isRefreshing.asStateFlow()
     
-    private val _isScanning = MutableLiveData<Boolean>()
-    val isScanning: LiveData<Boolean> = _isScanning
-
+    val cameras = MutableStateFlow<List<CameraDiscoveryService.CameraInfo>>(emptyList())
+    val scanningState = discoveryService.scanningState
+    val lastError = discoveryService.lastError
+    
     init {
-        startDiscovery()
-    }
-
-    fun startDiscovery() {
-        _isScanning.value = true
-        cameraDiscoveryService.startDiscovery { cameras ->
-            _cameras.postValue(cameras)
-            _isScanning.postValue(false)
+        discoveryService.setOnCameraDiscoveredListener { cameraList ->
+            viewModelScope.launch {
+                cameras.emit(cameraList)
+                if (_isRefreshing.value) {
+                    _isRefreshing.value = false
+                }
+            }
         }
+        startDiscovery()
     }
 
     override fun onCleared() {
         super.onCleared()
-        cameraDiscoveryService.stopDiscovery()
+        discoveryService.cleanup()
+    }
+
+    fun refresh() {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            discoveryService.startDiscovery()
+            
+            // Auto-disable refreshing after timeout
+            delay(10000)
+            if (_isRefreshing.value) {
+                _isRefreshing.value = false
+            }
+        }
+    }
+
+    fun startDiscovery() {
+        discoveryService.startDiscovery()
+    }
+
+    fun stopDiscovery() {
+        discoveryService.stopDiscovery()
+    }
+
+    fun getStreamUrl(camera: CameraDiscoveryService.CameraInfo): String {
+        return "http://${camera.host}:${camera.port}${camera.streamPath}"
     }
 }

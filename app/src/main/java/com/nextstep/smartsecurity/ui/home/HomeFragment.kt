@@ -1,29 +1,30 @@
 package com.nextstep.smartsecurity.ui.home
 
-import android.graphics.Bitmap
 import android.os.Bundle
-import android.util.Log
-import android.view.*
-import android.webkit.WebSettings
-import android.webkit.WebView
-import android.webkit.WebViewClient
-import androidx.core.view.MenuProvider
-import androidx.core.view.isVisible
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
 import com.nextstep.smartsecurity.R
 import com.nextstep.smartsecurity.databinding.FragmentHomeBinding
 import com.nextstep.smartsecurity.service.CameraDiscoveryService.CameraInfo
+import com.nextstep.smartsecurity.service.CameraDiscoveryService.ScanningState
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment() {
-
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    private lateinit var viewModel: HomeViewModel
-    
-    private var audioEnabled1 = false
-    private var audioEnabled2 = false
+    private val viewModel: HomeViewModel by viewModels()
+    private lateinit var cameraAdapter: CameraAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -31,132 +32,116 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
-        val root: View = binding.root
-
-        viewModel = ViewModelProvider(this)[HomeViewModel::class.java]
-        setupMenu()
-        setupWebViews()
-        observeViewModel()
-
-        return root
+        return binding.root
     }
 
-    private fun setupMenu() {
-        requireActivity().addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.menu_home, menu)
-            }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupRecyclerView()
+        setupSwipeRefresh()
+        observeViewModel()
+    }
 
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return when (menuItem.itemId) {
-                    R.id.action_refresh -> {
-                        viewModel.startDiscovery()
-                        true
-                    }
-                    else -> false
+    private fun setupRecyclerView() {
+        cameraAdapter = CameraAdapter(
+            onCameraClick = { camera -> 
+                if (camera.isReachable) {
+                    // TODO: Open video stream 
+                    val streamUrl = viewModel.getStreamUrl(camera)
+                    Toast.makeText(requireContext(), "Opening stream: $streamUrl", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(requireContext(), R.string.camera_not_reachable, Toast.LENGTH_SHORT).show()
                 }
             }
-        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+        )
+        
+        binding.recyclerView.apply {
+            adapter = cameraAdapter
+            layoutManager = LinearLayoutManager(requireContext())
+            setHasFixedSize(true)
+        }
     }
 
-    private fun setupWebViews() {
-        // Configure WebView settings
-        val configureWebView = { webView: WebView ->
-            webView.settings.apply {
-                javaScriptEnabled = true
-                domStorageEnabled = true
-                mediaPlaybackRequiresUserGesture = false
-                useWideViewPort = true
-                loadWithOverviewMode = true
-                // Enable hardware acceleration for better performance
-                webView.setLayerType(View.LAYER_TYPE_HARDWARE, null)
-                // Cache settings for better performance
-                cacheMode = WebSettings.LOAD_NO_CACHE
-                // Enable mixed content (HTTP content in HTTPS page)
-                mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-            }
-        }
-        
-        configureWebView(binding.webView1)
-        configureWebView(binding.webView2)
-
-        // Set WebViewClient to handle page loading
-        val webViewClient = object : WebViewClient() {
-            override fun onReceivedError(view: WebView?, errorCode: Int, description: String?, failingUrl: String?) {
-                super.onReceivedError(view, errorCode, description, failingUrl)
-                Log.e("WebView", "Error: code=$errorCode, desc=$description, url=$failingUrl")
-            }
-
-            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-                super.onPageStarted(view, url, favicon)
-                Log.d("WebView", "Started loading: $url")
-            }
-
-            override fun onPageFinished(view: WebView?, url: String?) {
-                super.onPageFinished(view, url)
-                Log.d("WebView", "Finished loading: $url")
-            }
-        }
-        binding.webView1.webViewClient = webViewClient
-        binding.webView2.webViewClient = webViewClient
-
-        // Setup audio buttons
-        binding.audioButton1.setOnClickListener {
-            audioEnabled1 = !audioEnabled1
-            binding.audioButton1.setImageResource(
-                if (audioEnabled1) R.drawable.ic_volume_up else R.drawable.ic_volume_off
+    private fun setupSwipeRefresh() {
+        binding.swipeRefresh.apply {
+            setColorSchemeColors(
+                ContextCompat.getColor(requireContext(), R.color.primary)
             )
-            binding.webView1.settings.mediaPlaybackRequiresUserGesture = !audioEnabled1
-            // Reload stream to apply audio setting
-            viewModel.cameras.value?.firstOrNull()?.let { camera ->
-                binding.webView1.loadUrl("http://${camera.host}:${camera.port}${camera.streamPath}")
-            }
-        }
-
-        binding.audioButton2.setOnClickListener {
-            audioEnabled2 = !audioEnabled2
-            binding.audioButton2.setImageResource(
-                if (audioEnabled2) R.drawable.ic_volume_up else R.drawable.ic_volume_off
-            )
-            binding.webView2.settings.mediaPlaybackRequiresUserGesture = !audioEnabled2
-            // Reload stream to apply audio setting
-            viewModel.cameras.value?.getOrNull(1)?.let { camera ->
-                binding.webView2.loadUrl("http://${camera.host}:${camera.port}${camera.streamPath}")
+            setOnRefreshListener {
+                viewModel.refresh()
             }
         }
     }
 
     private fun observeViewModel() {
-        viewModel.cameras.observe(viewLifecycleOwner) { cameras ->
-            updateCameraViews(cameras)
-        }
-
-        viewModel.isScanning.observe(viewLifecycleOwner) { isScanning ->
-            binding.progressBar.isVisible = isScanning
-            if (isScanning) {
-                binding.noCamerasText.isVisible = false
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // Collect cameras
+                launch {
+                    viewModel.cameras.collectLatest { cameras ->
+                        updateCameraList(cameras)
+                    }
+                }
+                
+                // Collect refreshing state
+                launch {
+                    viewModel.isRefreshing.collectLatest { isRefreshing ->
+                        binding.swipeRefresh.isRefreshing = isRefreshing
+                    }
+                }
+                
+                // Collect scanning state
+                launch {
+                    viewModel.scanningState.collectLatest { state ->
+                        when (state) {
+                            is ScanningState.Idle -> {
+                                binding.progressBar.visibility = View.GONE
+                                binding.statusText.visibility = View.GONE
+                            }
+                            is ScanningState.Scanning -> {
+                                binding.progressBar.visibility = View.VISIBLE
+                                binding.statusText.apply {
+                                    text = getString(R.string.scanning_for_cameras)
+                                    visibility = View.VISIBLE
+                                }
+                            }
+                            is ScanningState.Error -> {
+                                binding.progressBar.visibility = View.GONE
+                                binding.statusText.apply {
+                                    text = state.message
+                                    setTextColor(ContextCompat.getColor(context, R.color.error))
+                                    visibility = View.VISIBLE
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Collect errors
+                launch {
+                    viewModel.lastError.collectLatest { error ->
+                        error?.let {
+                            Snackbar.make(
+                                binding.root,
+                                error,
+                                Snackbar.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+                }
             }
         }
     }
 
-    private fun updateCameraViews(cameras: List<CameraInfo>) {
-        binding.noCamerasText.isVisible = cameras.isEmpty()
-        binding.linearLayout1.isVisible = cameras.isNotEmpty()
-        binding.linearLayout2.isVisible = cameras.size > 1
-
-            if (cameras.isNotEmpty()) {
-                val camera1 = cameras[0]
-                val url1 = "http://${camera1.host}:${camera1.port}${camera1.streamPath}"
-                Log.d("Camera", "Loading camera 1: $url1")
-                binding.webView1.loadUrl(url1)
-            }
-
-            if (cameras.size > 1) {
-                val camera2 = cameras[1]
-                val url2 = "http://${camera2.host}:${camera2.port}${camera2.streamPath}"
-                Log.d("Camera", "Loading camera 2: $url2")
-                binding.webView2.loadUrl(url2)
-            }
+    private fun updateCameraList(cameras: List<CameraInfo>) {
+        if (cameras.isEmpty()) {
+            binding.emptyView.visibility = View.VISIBLE
+            binding.recyclerView.visibility = View.GONE
+        } else {
+            binding.emptyView.visibility = View.GONE
+            binding.recyclerView.visibility = View.VISIBLE
+            cameraAdapter.submitList(cameras)
+        }
     }
 
     override fun onDestroyView() {
